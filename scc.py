@@ -13,9 +13,9 @@
 
 
 class Graph:
-    def __init__(self):
+    def __init__(self, nodes=None):
         #create an empty graph
-        self.nodes = {}
+        self.nodes = nodes if nodes is not None else {}
         self.dict_of_children = {}
         self.dict_of_parents = {}
         self.edge_order = []
@@ -98,5 +98,38 @@ class Graph:
         # edges are returned in the order they were added
         return list(self.edge_order)
     
+    def swap_edge(parent, child):
+        pass
+
+    def reversed_graph(self):
+        # get all nodes
+        # create new graph with nodes passed in
+        # add all swapped edges
+        # return graph
+        reversed = Graph(self.get_nodes())
+        for node in reversed.get_nodes():
+            children = self.dict_of_children[node]
+            parents = self.dict_of_parents[node]
+
+            for c in children:
+                reversed.add_edge(c, node)
+            for p in parents:
+                reversed.add_edge(node, p)
+        return reversed
 
 
+
+
+def test_reversed_graph():
+    g=Graph()
+    g.add_node("one", data = "one data") #(node, data)
+    g.add_node("two", data = "two data") #(node, data)
+
+    g.add_edge("one","two", data = "added edge from one to two")
+
+    r = g.reversed_graph()
+    edges = r.get_edges()
+
+    assert edges == [("two", "one")]
+    
+    
