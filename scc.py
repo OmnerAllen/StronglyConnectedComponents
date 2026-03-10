@@ -102,19 +102,16 @@ class Graph:
         pass
 
     def reversed_graph(self):
-        # get all nodes
-        # create new graph with nodes passed in
-        # add all swapped edges
+        # make new graph
+        # add nodes to new graph
+        # add edges (reversed) to new graph
         # return graph
-        reversed = Graph(self.get_nodes())
-        for node in reversed.get_nodes():
-            children = self.dict_of_children[node]
-            parents = self.dict_of_parents[node]
+        reversed = Graph()
+        for node in self.get_nodes():
+            reversed.add_node(node, self.get_node_data(node))
+        for parent, child in self.get_edges():
+            reversed.add_edge(child, parent, self.get_edge_data(parent,child))
 
-            for c in children:
-                reversed.add_edge(c, node)
-            for p in parents:
-                reversed.add_edge(node, p)
         return reversed
 
 
