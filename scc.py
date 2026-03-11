@@ -115,6 +115,50 @@ class Graph:
         return reversed
 
 
+# DFS on reversed_graph
+# returns our topo order
+# optional dfs order, default is just start from one until the end
+
+def get_frozen_set(dupe_node, stack, list:list=[]):
+    
+    if stack[0] is not dupe_node:
+        list.append(frozenset([stack[0]]))
+        get_frozen_set(dupe_node, stack[1:], list)
+    list.append(frozenset(stack))
+    return list
+
+
+def scc(g:Graph):
+    r = g.reversed_graph()
+    already_searched = []
+    list_frozens = []
+    
+
+    def dfs(graph:Graph, node, stack=list):
+        if node in already_searched:
+            return
+        children = graph.get_children(node)
+        if children is None:
+            already_searched.append(node)
+            return # return a list of frozensets (each frozenset is its own node in the stack)
+        
+        if node in stack:
+            list_frozens.append(get_frozen_set(node, stack))
+            stack = []
+            
+
+        stack.append(node)
+        for child in children:
+            dfs(graph, child, stack)
+        
+        
+    for node in r.get_nodes():
+        dfs(node)
+
+
+
+
+
 
 
 def test_reversed_graph():
