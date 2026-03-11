@@ -119,44 +119,41 @@ class Graph:
 # returns our topo order
 # optional dfs order, default is just start from one until the end
 
-def get_frozen_set(dupe_node, stack, list:list=[]):
-    
-    if stack[0] is not dupe_node:
-        list.append(frozenset([stack[0]]))
-        get_frozen_set(dupe_node, stack[1:], list)
-    list.append(frozenset(stack))
-    return list
-
 
 def scc(g:Graph):
     r = g.reversed_graph()
-    already_searched = []
-    list_frozens = []
+    already_searchedr = []
+    already_searchedo = []
+    order = []
+    sccs = []
     
 
-    def dfs(graph:Graph, node, stack=list):
-        if node in already_searched:
-            return
-        children = graph.get_children(node)
-        if children is None:
-            already_searched.append(node)
-            return # return a list of frozensets (each frozenset is its own node in the stack)
-        
-        if node in stack:
-            list_frozens.append(get_frozen_set(node, stack))
-            stack = []
-            
-
-        stack.append(node)
-        for child in children:
-            dfs(graph, child, stack)
+    def dfsr(node):
+        already_searchedr.append(node)
+        for child in r.get_children(node):
+            if child not in already_searchedr:
+                dfsr(child)
+        order.append(node)
         
         
     for node in r.get_nodes():
-        dfs(node)
+        if node not in already_searchedr:
+            dfsr(node)
 
+    def dfso(node, component):
+        already_searchedo.append(node)
+        component.append(node)
+        for child in g.get_children(node):
+            if child not in already_searchedo:
+                dfso(child, component)
+        
+    for node in reversed(order):
+        if node not in already_searchedo:
+            component = []
+            dfso(node, component)
+            sccs.append(frozenset(component))
 
-
+    return sccs
 
 
 
@@ -173,4 +170,19 @@ def test_reversed_graph():
 
     assert edges == [("two", "one")]
     
+def test_frozensets():
+    g=Graph()
+    g.add_node("one")
+    g.add_node("two")
+    g.add_node("three")
+    g.add_node("four")
+
+    g.add_undirected_edge("one", "two")
+    g.add_edge("two", "three")
+    g.add_edge("four", "one")
+
+    sccsExpected = [frozenset({"three"}), frozenset({"one", "two"}), frozenset({"four"})]
+    sccsCalculated = scc(g)
+
+    assert sccsExpected == sccsCalculated
     
