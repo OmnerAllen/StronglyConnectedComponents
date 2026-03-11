@@ -155,6 +155,25 @@ def scc(g:Graph):
 
     return sccs
 
+def meta_graph(og:Graph):
+    sccs = scc(og)
+    meta = Graph()
+    node_to_scc = {}
+
+    for scc_set in sccs:
+        for node in scc_set:
+            node_to_scc[node] = scc_set
+
+    for scc_set in reversed(sccs):
+        meta.add_node(scc_set)
+    
+    for parent, child in og.get_edges():
+        scc_parent = node_to_scc[parent]
+        scc_child = node_to_scc[child]
+        if scc_parent != scc_child:
+            meta.add_edge(scc_parent, scc_child)
+
+    return meta
 
 
 
@@ -186,3 +205,50 @@ def test_frozensets():
 
     assert sccsExpected == sccsCalculated
     
+def test_metagraph1():
+    g=Graph()
+    g.add_node("one")
+    g.add_node("two")
+    g.add_node("three")
+    g.add_node("four")
+
+    g.add_undirected_edge("one", "two")
+    g.add_edge("two", "three")
+    g.add_edge("four", "one")
+
+    m = meta_graph(g)
+
+    scc_four = frozenset({"four"})
+    scc_onetwo = frozenset({"one", "two"})
+    scc_three = frozenset({"three"})
+
+    assert m.get_nodes() == [scc_four, scc_onetwo, scc_three]
+
+    assert m.contains_edge(scc_four, scc_onetwo)
+    assert m.contains_edge(scc_onetwo, scc_three)
+    assert not m.contains_edge(scc_four, scc_three)
+
+def test_metagraph2():
+    g=Graph()
+    g.add_node("one")
+    g.add_node("two")
+    g.add_node("three")
+    g.add_node("four")
+    g.add_node("five")
+
+    g.add_undirected_edge("one", "two")
+    g.add_undirected_edge("four", "five")
+    g.add_edge("two", "three")
+    g.add_edge("three", "four")
+
+    m = meta_graph(g)
+
+    scc_fourfive = frozenset({"four", "five"})
+    scc_onetwo = frozenset({"one", "two"})
+    scc_three = frozenset({"three"})
+
+    assert m.get_nodes() == [scc_onetwo, scc_three, scc_fourfive]
+    
+    assert m.contains_edge(scc_onetwo, scc_three)
+    assert m.contains_edge(scc_three, scc_fourfive)
+    assert not m.contains_edge(scc_onetwo, scc_fourfive)
